@@ -24,4 +24,5 @@ type 'a node = {
   inbox : Inbox.t;
   failure_detector : failure_detector;
   peers : (Address.t, Peer.t) Base.Hashtbl.t;
+  disseminator : Disseminator.t
 }

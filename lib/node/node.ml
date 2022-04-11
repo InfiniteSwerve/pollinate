@@ -35,6 +35,7 @@ let init ~state ?(router = fun m -> m) ~msg_handler ?(init_peers = [])
               helpers_size = 3;
             };
         peers;
+        disseminator = Disseminator.create 10
       } in
   Server.run node router msg_handler;
   Lwt.return node

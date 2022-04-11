@@ -11,6 +11,7 @@ type category =
   | Uncategorized
   | Request
   | Response
+  | Post
   | Failure_detection
   | Custom            of string
 [@@deriving bin_io]
