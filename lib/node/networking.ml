@@ -64,11 +64,14 @@ let rec pick_random_neighbors neighbors number_of_neighbors =
     else
       elem :: pick_random_neighbors neighbors (number_of_neighbors - 1)
 
-let broadcast node category payload (recipients: Address.t list) =
+let broadcast node category payload (recipients : Address.t list) =
   recipients
-  |> List.map (fun recipient -> Message.{ category; id = -1; sender = !node.address; recipient; payload}) 
+  |> List.map (fun recipient ->
+         Message.
+           { category; id = -1; sender = !node.address; recipient; payload })
   |> List.map (fun msg ->
-    let%lwt () = send_to node msg in Lwt.return ())
+         let%lwt () = send_to node msg in
+         Lwt.return ())
 
 let post node ?category payload =
   match category with
@@ -79,7 +82,7 @@ let disseminate node =
   let dissemination_group = pick_random_neighbors !node.peers 10 in
   let _ =
     Disseminator.broadcast_queue !node.disseminator
-    |> List.map (fun (category, payload) -> broadcast node category payload dissemination_group)
+    |> List.map (fun (category, payload) ->
+           broadcast node category payload dissemination_group)
     |> List.concat in
   Lwt.return ()
-  
