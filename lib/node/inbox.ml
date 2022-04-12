@@ -29,3 +29,7 @@ let await_next inbox ?(consume = true) category =
 
 let push inbox category message =
   category |> find_or_create_category inbox |> Tqueue.add message
+
+let new_messages inbox =
+  Base.Hashtbl.keys inbox
+  |> Lwt_list.filter_map_p (next inbox)

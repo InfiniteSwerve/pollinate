@@ -23,3 +23,5 @@ val await_next : t -> ?consume:bool -> Message.category -> Message.t Lwt.t
 to the corresponding queue. Creates a queue for the given category
 if one has not been created yet. *)
 val push : t -> Message.category -> Message.t -> unit Lwt.t
+
+val new_messages : t -> Message.t list Lwt.t
