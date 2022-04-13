@@ -94,7 +94,7 @@ let create_message node message (recipient : Peer.t) =
 
 let send_message message node (recipient : Peer.t) =
   let message = create_message node message recipient in
-  Client.send_to node message
+  Networking.send_to node message
 
 let send_ping_to node peer = send_message Ping node peer
 

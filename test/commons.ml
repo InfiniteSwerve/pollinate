@@ -6,7 +6,7 @@ module Commons = struct
 
   type state = string list
 
-  let router msg =
+  let preprocessor msg =
     let open Messages in
     match msg.Message.category with
     | Request ->
@@ -22,7 +22,6 @@ module Commons = struct
   let msg_handler state message =
     let open Messages in
     let open Message in
-
     match message.category with
     | Request ->
       let request = Encoding.unpack bin_read_request message.payload in
@@ -33,33 +32,31 @@ module Commons = struct
         | Insert s ->
           state := s :: !state;
           Success "Successfully added value to state" in
-      (Response response)
-      |> Encoding.pack bin_writer_message 
-      |> Option.some
+      Response response |> Encoding.pack bin_writer_message |> Option.some
     | _ -> None
 
   (* Initializes four nodes and the related four peers *)
   let node_a =
     Lwt_main.run
-      (Node.init ~router ~state:["test1"] ~msg_handler ("127.0.0.1", 3000))
+      (Node.init ~state:["test1"] ("127.0.0.1", 3000))
 
   let peer_a = Client.peer_from !node_a
 
   let node_b =
     Lwt_main.run
-      (Node.init ~router ~state:["test2"] ~msg_handler ("127.0.0.1", 3001))
+      (Node.init ~state:["test2"] ("127.0.0.1", 3001))
 
   let peer_b = Client.peer_from !node_b
 
   let node_c =
     Lwt_main.run
-      (Node.init ~router ~state:["test1"] ~msg_handler ("127.0.0.1", 3002))
+      (Node.init ~state:["test1"] ("127.0.0.1", 3002))
 
   let peer_c = Client.peer_from !node_c
 
   let node_d =
     Lwt_main.run
-      (Node.init ~router ~state:["test2"] ~msg_handler ("127.0.0.1", 3003))
+      (Node.init ~state:["test2"] ("127.0.0.1", 3003))
 
   let peer_d = Client.peer_from !node_d
 end

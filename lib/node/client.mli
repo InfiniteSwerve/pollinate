@@ -23,16 +23,18 @@ val create_response : 'a node ref -> Message.t -> bytes -> Message.t
 (** Sends a message via datagram from the given node
 to a specified peer. Construct a message with one of the
 create functions to then feed to this function. *)
-val send_to : 'a node ref -> Message.t -> unit Lwt.t
+(* val send_to : 'a node ref -> Message.t -> unit Lwt.t *)
 
 (** Waits for the next incoming message and returns it *)
-val recv_next : 'a node ref -> Message.t Lwt.t
+(* val recv_next : 'a node ref -> Message.t Lwt.t *)
 
 (** Sends an encoded request to the specified peer and
 returns a promise holding the response from the peer. This
 function blocks the current thread of execution until a response
 arrives. *)
 val request : 'a node ref -> bytes -> Address.t -> Message.t Lwt.t
+
+val post : 'a node ref -> ?category:Message.category -> bytes -> unit
 
 (** Broadcasts a request containing the given payload to a list
 of recipients and collects the responses in a list of `Message.t Lwt.t`. *)

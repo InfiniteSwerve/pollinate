@@ -73,11 +73,6 @@ let broadcast node category payload (recipients : Address.t list) =
          let%lwt () = send_to node msg in
          Lwt.return ())
 
-let post node ?category payload =
-  match category with
-  | Some category -> Disseminator.post !node.disseminator category payload
-  | None -> Disseminator.post !node.disseminator Message.Post payload
-
 let disseminate node =
   let dissemination_group = pick_random_neighbors !node.peers 10 in
   let _ =

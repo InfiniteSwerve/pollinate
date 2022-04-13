@@ -15,8 +15,12 @@ The message handler is used to initialize a server that runs asynchronously.
 Returns reference to the newly created node. *)
 val init :
   state:'a ->
-  ?preprocessor:(Message.t -> Message.t) ->
-  msg_handler:('a ref -> Message.t -> bytes option) ->
   ?init_peers:Address.t list ->
   string * int ->
   'a t ref Lwt.t
+
+val run_server :
+  ?preprocessor:(Message.t -> Message.t) ->
+  msg_handler:('a ref -> Message.t -> bytes option) ->
+  'a t ref ->
+  'b Lwt.t

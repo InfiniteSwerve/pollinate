@@ -7,7 +7,7 @@ module Failure_detector = Failure_detector
 
 type 'a t = 'a Types.node
 
-let init ~state ?(preprocessor = fun m -> m) ~msg_handler ?(init_peers = [])
+let init ~state ?(init_peers = [])
     (address, port) =
   let open Util in
   let%lwt socket = Net.create_socket port in
@@ -36,5 +36,7 @@ let init ~state ?(preprocessor = fun m -> m) ~msg_handler ?(init_peers = [])
         peers;
         disseminator = Disseminator.create 10;
       } in
-  Server.run node preprocessor msg_handler;
   Lwt.return node
+
+let run_server ?(preprocessor = fun m -> m) ~msg_handler node =
+  Server.run node preprocessor msg_handler
