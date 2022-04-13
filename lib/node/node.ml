@@ -7,7 +7,7 @@ module Failure_detector = Failure_detector
 
 type 'a t = 'a Types.node
 
-let init ~state ?(router = fun m -> m) ~msg_handler ?(init_peers = [])
+let init ~state ?(preprocessor = fun m -> m) ~msg_handler ?(init_peers = [])
     (address, port) =
   let open Util in
   let%lwt socket = Net.create_socket port in
@@ -25,7 +25,6 @@ let init ~state ?(router = fun m -> m) ~msg_handler ?(init_peers = [])
         request_table = Hashtbl.create 20;
         socket = Mutex.create socket;
         state = Mutex.create (ref state);
-        inbox = Inbox.create ();
         failure_detector =
           Failure_detector.make
             {
@@ -37,5 +36,5 @@ let init ~state ?(router = fun m -> m) ~msg_handler ?(init_peers = [])
         peers;
         disseminator = Disseminator.create 10;
       } in
-  Server.run node router msg_handler;
+  Server.run node preprocessor msg_handler;
   Lwt.return node

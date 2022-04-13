@@ -21,7 +21,6 @@ type 'a node = {
   request_table : (int, Message.t Lwt_condition.t) Hashtbl.t;
   socket : file_descr Mutex.t;
   state : 'a ref Mutex.t;
-  inbox : Inbox.t;
   failure_detector : failure_detector;
   peers : (Address.t, Peer.t) Base.Hashtbl.t;
   disseminator : Disseminator.t;
