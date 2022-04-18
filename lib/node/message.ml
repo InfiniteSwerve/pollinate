@@ -8,13 +8,14 @@ type category =
   | Post
   | Failure_detection
   | Custom            of string
-[@@deriving bin_io]
+[@@deriving bin_io, show]
 
 type t = {
   category : category;
   id : int;
+  timestamp : float;
   sender : Address.t;
-  recipient : Address.t;
+  recipients : Address.t list;
   payload : bytes;
 }
 [@@deriving bin_io]

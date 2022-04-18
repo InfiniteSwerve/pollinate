@@ -1,6 +1,5 @@
 type pool_elt = {
-  category : Message.category;
-  payload : bytes;
+  message : Message.t;
   remaining : int;
 }
 type t = {
@@ -20,12 +19,10 @@ let next_round disseminator =
            { elt with remaining = remaining - 1 })
     |> List.filter (fun elt -> elt.remaining > 0)
 
-let post disseminator category payload =
+let post disseminator message =
   disseminator.pool <-
-    { category; payload; remaining = disseminator.num_rounds }
+    { message ; remaining = disseminator.num_rounds }
     :: disseminator.pool
 
 let broadcast_queue disseminator =
-  List.map
-    (fun { category; payload; _ } -> (category, payload))
-    disseminator.pool
+    List.map (fun e -> e.message) disseminator.pool

@@ -14,15 +14,16 @@ type category =
   | Post
   | Failure_detection
   | Custom            of string
-[@@deriving bin_io]
+[@@deriving bin_io, show]
 
 (** Messages received from peers which are
 stored in the node's inbox *)
 type t = {
   category : category;
   id : int;
+  timestamp : float;
   sender : Address.t;
-  recipient : Address.t;
+  recipients : Address.t list;
   payload : bytes;
 }
 [@@deriving bin_io]

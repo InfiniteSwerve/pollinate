@@ -7,8 +7,7 @@ module Failure_detector = Failure_detector
 
 type 'a t = 'a Types.node
 
-let init ~state ?(init_peers = [])
-    (address, port) =
+let init ~state ?(init_peers = []) (address, port) =
   let open Util in
   let%lwt socket = Net.create_socket port in
   let peers =

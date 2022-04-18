@@ -20,6 +20,8 @@ val create_request : 'a node ref -> Address.t -> bytes -> Message.t Lwt.t
 that responds to `request` whose content is `payload`. *)
 val create_response : 'a node ref -> Message.t -> bytes -> Message.t
 
+val create_post : 'a node ref -> bytes -> Message.t
+
 (** Sends a message via datagram from the given node
 to a specified peer. Construct a message with one of the
 create functions to then feed to this function. *)
@@ -34,7 +36,7 @@ function blocks the current thread of execution until a response
 arrives. *)
 val request : 'a node ref -> bytes -> Address.t -> Message.t Lwt.t
 
-val post : 'a node ref -> ?category:Message.category -> bytes -> unit
+val post : 'a node ref -> Message.t -> unit
 
 (** Broadcasts a request containing the given payload to a list
 of recipients and collects the responses in a list of `Message.t Lwt.t`. *)

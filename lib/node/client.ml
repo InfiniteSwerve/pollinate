@@ -23,8 +23,9 @@ let create_request node recipient payload =
           {
             category = Message.Request;
             id = !id;
+            timestamp = Unix.gettimeofday ();
             sender = !node.address;
-            recipient;
+            recipients = [recipient];
             payload;
           })
 
@@ -33,10 +34,21 @@ let create_response node request payload =
     {
       category = Message.Response;
       id = request.id;
+      timestamp = Unix.gettimeofday ();
       sender = !node.address;
-      recipient = request.sender;
+      recipients = [request.sender];
       payload;
     }
+
+let create_post node payload =
+  Message.{
+    category = Message.Post;
+    id = -1;
+    timestamp = Unix.gettimeofday ();
+    sender = !node.address;
+    recipients = [];
+    payload
+  }
 
 let request node request recipient =
   let%lwt message = create_request node recipient request in
@@ -45,10 +57,8 @@ let request node request recipient =
   Hashtbl.add !node.request_table message.id condition_var;
   Lwt_condition.wait condition_var
 
-let post node ?category payload =
-  match category with
-  | Some category -> Disseminator.post !node.disseminator category payload
-  | None -> Disseminator.post !node.disseminator Message.Post payload
+let post node message =
+  Disseminator.post !node.disseminator message
 
 let broadcast_request node req recipients =
   List.map (request node req) recipients

@@ -24,16 +24,25 @@ let handle_response node res =
 let rec run node preprocessor msg_handler =
   let open Message in
   let%lwt () = Lwt_io.printf "Running server\n" in
+  let%lwt () =
+    !node.disseminator
+    |> Disseminator.broadcast_queue
+    |> List.map (fun {category; _} -> Message.show_category category)
+    |> String.concat " "
+    |> Lwt_io.printf "Broadcast Queue: %s\n" in
   let%lwt () = Failure_detector.failure_detection node in
   let%lwt () = Networking.disseminate node in
   let process_message =
-    (let%lwt message = Networking.recv_next node in
+    let%lwt message = Networking.recv_next node in
     let message = preprocessor message in
     let%lwt () =
       match message.category with
       | Response -> Lwt.return (handle_response node message)
       | Request -> (
-        let%lwt () = Lwt_io.printf "%s:%d : Processing request from %s:%d\n" (!node.address.address) (!node.address.port) (message.sender.address) (message.sender.port) in
+        let%lwt () =
+          Lwt_io.printf "%s:%d : Processing request from %s:%d\n"
+            !node.address.address !node.address.port message.sender.address
+            message.sender.port in
         let%lwt state = Mutex.lock !node.state in
         match msg_handler state message with
         | Some response ->
@@ -52,12 +61,12 @@ let rec run node preprocessor msg_handler =
             message.sender.port in
         let%lwt state = Mutex.lock !node.state in
         let _ = msg_handler state message in
-        Client.post node ~category:message.category message.payload;
+        Client.post node message;
         Lwt.return (Mutex.unlock !node.state)
       | _ ->
         let%lwt state = Mutex.lock !node.state in
         let _ = msg_handler state message in
         Lwt.return (Mutex.unlock !node.state) in
-      Lwt.return ()) in
-  let%lwt () = Lwt.pick [ process_message ; Lwt_unix.sleep 3.] in
+    Lwt.return () in
+  let%lwt () = Lwt.pick [process_message; Lwt_unix.sleep 3.] in
   run node preprocessor msg_handler

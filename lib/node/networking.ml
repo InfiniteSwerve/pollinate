@@ -7,9 +7,9 @@ let send_to node message =
   let open Message in
   let payload = Encoding.pack Message.bin_writer_t message in
   let len = Bytes.length payload in
-  let addr = Address.to_sockaddr message.recipient in
+  let addrs = List.map Address.to_sockaddr message.recipients in
   Mutex.unsafe !node.socket (fun socket ->
-      let%lwt _ = sendto socket payload 0 len [] addr in
+      let%lwt _ = Lwt_list.map_p (fun addr -> sendto socket payload 0 len [] addr) addrs in
       Lwt.return ())
 
 let recv_next node =
@@ -64,20 +64,15 @@ let rec pick_random_neighbors neighbors number_of_neighbors =
     else
       elem :: pick_random_neighbors neighbors (number_of_neighbors - 1)
 
-let broadcast node category payload (recipients : Address.t list) =
-  recipients
-  |> List.map (fun recipient ->
-         Message.
-           { category; id = -1; sender = !node.address; recipient; payload })
-  |> List.map (fun msg ->
-         let%lwt () = send_to node msg in
-         Lwt.return ())
+let broadcast node message (recipients : Address.t list) =
+  let message = Message.{ message with recipients } in
+  let%lwt () = send_to node message in
+  Lwt.return ()
 
 let disseminate node =
   let dissemination_group = pick_random_neighbors !node.peers 10 in
   let _ =
     Disseminator.broadcast_queue !node.disseminator
-    |> List.map (fun (category, payload) ->
-           broadcast node category payload dissemination_group)
-    |> List.concat in
+    |> List.map (fun message ->
+           broadcast node message dissemination_group) in
   Lwt.return ()
