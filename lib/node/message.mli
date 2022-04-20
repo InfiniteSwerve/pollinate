@@ -27,3 +27,5 @@ type t = {
   payload : bytes;
 }
 [@@deriving bin_io]
+
+val hash_of : t -> Digest.t

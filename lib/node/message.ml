@@ -19,3 +19,13 @@ type t = {
   payload : bytes;
 }
 [@@deriving bin_io]
+
+let hash_of m =
+  [
+    m.sender.address;
+    string_of_int m.sender.port;
+    string_of_float m.timestamp;
+    Bytes.to_string m.payload;
+  ]
+  |> String.concat ""
+  |> Digest.string

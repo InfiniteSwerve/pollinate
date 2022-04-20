@@ -38,4 +38,4 @@ let init ~state ?(init_peers = []) (address, port) =
   Lwt.return node
 
 let run_server ?(preprocessor = fun m -> m) ~msg_handler node =
-  Server.run node preprocessor msg_handler
+  Server.run (Unix.time ()) node preprocessor msg_handler
