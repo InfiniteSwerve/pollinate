@@ -1,6 +1,6 @@
 (** Messages received by the node, whether they're requests,
 responses, or protocol-specific messages. For consumer use
-only when implementing a routing function for the
+only when implementing a preprocessing function for the
 node. *)
 open Common
 
@@ -16,8 +16,8 @@ type category =
   | Custom            of string
 [@@deriving bin_io, show]
 
-(** Messages received from peers which are
-stored in the node's inbox *)
+(** Messages received from peers which are processed by the node's
+    message handler*)
 type t = {
   category : category;
   id : int;
