@@ -75,5 +75,5 @@ let disseminate node =
     Disseminator.broadcast_queue !node.disseminator
     |> List.map (fun message ->
            broadcast node message dissemination_group) in
-  Disseminator.next_round !node.disseminator;
-  Lwt.return ()
+  Lwt.return (!node.disseminator <- Disseminator.next_round !node.disseminator)
+  

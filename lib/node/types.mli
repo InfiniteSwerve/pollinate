@@ -59,5 +59,5 @@ type 'a node = {
   (* Dissemination component ; runs automatically with the server and is responsible
      for automatically disseminating both new Post messages and received Post messages
      with other nodes in the network *)
-  disseminator : Disseminator.t;
+  mutable disseminator : Disseminator.t;
 }

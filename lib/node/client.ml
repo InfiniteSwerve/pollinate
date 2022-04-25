@@ -58,7 +58,7 @@ let request node request recipient =
   Lwt_condition.wait condition_var
 
 let post node message =
-  Disseminator.post !node.disseminator message
+  !node.disseminator <- Disseminator.post !node.disseminator message
 
 let broadcast_request node req recipients =
   List.map (request node req) recipients
