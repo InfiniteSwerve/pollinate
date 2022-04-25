@@ -29,12 +29,12 @@ let rec run last node preprocessor msg_handler =
       tm.Unix.tm_sec in
   let addr = Printf.sprintf "%s:%d" !node.address.address !node.address.port in
   let%lwt () = Lwt_io.printf "[%s @ %s] Running server\n" addr current_time in
-  let%lwt () =
+  (* let%lwt () =
     !node.disseminator.Disseminator.pool
     |> List.map (fun p -> p.Disseminator.remaining)
     |> List.map string_of_int
     |> String.concat " "
-    |> Lwt_io.printf "%s\n" in
+    |> Lwt_io.printf "%s\n" in *)
   let%lwt () =
     !node.disseminator
     |> Disseminator.broadcast_queue
