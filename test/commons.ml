@@ -1,6 +1,5 @@
 (** Utils function shared by the different tests modules *)
 module Commons = struct
-  open Pollinate
   open Pollinate.Node
   open Pollinate.Util
   open Messages
@@ -36,20 +35,4 @@ module Commons = struct
       Response response |> Encoding.pack bin_writer_message |> Option.some
     | _ -> None
 
-  (* Initializes four nodes and the related four peers *)
-  let node_a = Lwt_main.run (Node.init ~state:["test1"] Address.{ address = "127.0.0.1" ; port = 3000 })
-
-  let peer_a = Client.peer_from !node_a
-
-  let node_b = Lwt_main.run (Node.init ~state:["test2"] Address.{ address = "127.0.0.1" ; port = 3001 })
-
-  let peer_b = Client.peer_from !node_b
-
-  let node_c = Lwt_main.run (Node.init ~state:["test1"] Address.{ address = "127.0.0.1" ; port = 3002 })
-
-  let peer_c = Client.peer_from !node_c
-
-  let node_d = Lwt_main.run (Node.init ~state:["test2"] Address.{ address = "127.0.0.1" ; port = 3003 })
-
-  let peer_d = Client.peer_from !node_d
 end

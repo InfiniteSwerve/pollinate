@@ -1,22 +1,23 @@
 open Lwt.Infix
+open Commons
+open Pollinate
 open Pollinate.Node
 open Pollinate.Util
-open Commons
 open Messages
 
 module Node_tests = struct
   (* Initializes two nodes and the related two peers *)
   let node_a =
     Lwt_main.run
-      (Node.init ~router:Commons.router ~state:["test1"]
-         ~msg_handler:Commons.msg_handler ("127.0.0.1", 3000))
+      (Node.init ~state:["test1"]
+         Address.{ address = "127.0.0.1"; port = 3000 })
 
   let peer_a = Client.peer_from !node_a
 
   let node_b =
     Lwt_main.run
-      (Node.init ~router:Commons.router ~state:["test2"]
-         ~msg_handler:Commons.msg_handler ("127.0.0.1", 3001))
+      (Node.init ~state:["test2"]
+         Address.{ address = "127.0.0.1"; port = 3001 })
 
   let peer_b = Client.peer_from !node_b
 
@@ -24,6 +25,8 @@ module Node_tests = struct
      of the other, returning the first element in the response of each *)
   let trade_messages () =
     let open Messages in
+    let _ = Node.run_server ~preprocessor:Commons.preprocessor ~msg_handler:Commons.msg_handler node_a in
+    let _ = Node.run_server ~preprocessor:Commons.preprocessor ~msg_handler:Commons.msg_handler node_b in
     let get = Encoding.pack bin_writer_message (Request Get) in
 
     let%lwt { payload = res_from_b; _ } =
@@ -43,6 +46,8 @@ module Node_tests = struct
 
   let test_insert () =
     let open Messages in
+    let _ = Node.run_server ~preprocessor:Commons.preprocessor ~msg_handler:Commons.msg_handler node_a in
+    let _ = Node.run_server ~preprocessor:Commons.preprocessor ~msg_handler:Commons.msg_handler node_b in
     let insert_req =
       Encoding.pack bin_writer_message (Request (Insert "something")) in
 
@@ -64,6 +69,8 @@ module Node_tests = struct
 
   let ping_pong () =
     let open Messages in
+    let _ = Node.run_server ~preprocessor:Commons.preprocessor ~msg_handler:Commons.msg_handler node_a in
+    let _ = Node.run_server ~preprocessor:Commons.preprocessor ~msg_handler:Commons.msg_handler node_b in
     let ping = Encoding.pack bin_writer_message (Request Ping) in
 
     let%lwt { payload = pong; _ } = Client.request node_a ping peer_b.address in
@@ -95,10 +102,10 @@ let () =
   Lwt_main.run
   @@ Alcotest_lwt.run "Client tests"
        [
-         ( "communication",
+         ( "one-to-one communication",
            [
              Alcotest_lwt.test_case "Trading Messages" `Quick test_trade_messages;
-             Alcotest_lwt.test_case "Ping pong" `Quick test_ping_pong;
              Alcotest_lwt.test_case "Insert value" `Quick test_insert_value;
+             Alcotest_lwt.test_case "Ping pong" `Quick test_ping_pong;
            ] );
        ]

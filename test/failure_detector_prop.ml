@@ -1,13 +1,12 @@
 open QCheck2.Gen
 open Pollinate.Peer
-open Commons
+open Pollinate
 
 module SUT = Pollinate.Node.Failure_detector
 
 let node_a =
   Lwt_main.run
-    (Node.init ~router:Commons.router ~state:["test1"]
-       ~msg_handler:Commons.msg_handler ("127.0.0.1", 3002))
+    (Node.init ~state:["test1"] Address.{ address = "127.0.0.1"; port = 3002 })
 
 let knuth_shuffle_size =
   QCheck2.Test.make ~count:1000
