@@ -17,13 +17,12 @@ let create num_rounds epoch_length =
   { round = 0; pool = []; num_rounds; epoch_length; seen = DigestSet.empty }
 
 let next_round disseminator =
-  let time = Unix.time () in
   let round = disseminator.round + 1 in
   let pool =
     disseminator.pool
     |> List.map (fun ({ remaining; _ } as elt) ->
            { elt with remaining = remaining - 1 })
-    |> List.filter (fun elt -> elt.remaining > 0 && elt.message.timestamp > (time -. disseminator.epoch_length)) in
+    |> List.filter (fun elt -> elt.remaining > 0 && elt.message.timestamp > (Unix.time () -. disseminator.epoch_length)) in
 
   { disseminator with round; pool }
 
