@@ -11,7 +11,7 @@ type t
     whether a message is too old to be disseminated again by checking
     whether the message is newer than n seconds old, where n is the
     given epoch length. *)
-val create : int -> float -> t
+val create : num_rounds:int -> epoch_length:float -> t
 
 (** Starts the next round of dissemination, affecting the state
     of the disseminator. In particular, this function causes the

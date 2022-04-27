@@ -33,7 +33,7 @@ let init ~state ?(init_peers = []) Address.{ address; port} =
               helpers_size = 3;
             };
         peers;
-        disseminator = Disseminator.create 10 30.;
+        disseminator = Disseminator.create ~num_rounds:10 ~epoch_length:30.;
       } in
   Lwt.return node
 

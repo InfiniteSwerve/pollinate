@@ -13,7 +13,7 @@ type t = {
   seen : DigestSet.t;
 }
 
-let create num_rounds epoch_length =
+let create ~num_rounds ~epoch_length =
   { round = 0; pool = []; num_rounds; epoch_length; seen = DigestSet.empty }
 
 let next_round disseminator =
