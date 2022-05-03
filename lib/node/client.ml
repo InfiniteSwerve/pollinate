@@ -41,14 +41,15 @@ let create_response node request payload =
     }
 
 let create_post node payload =
-  Message.{
-    category = Message.Post;
-    id = -1;
-    timestamp = Unix.gettimeofday ();
-    sender = !node.address;
-    recipients = [];
-    payload
-  }
+  Message.
+    {
+      category = Message.Post;
+      id = -1;
+      timestamp = Unix.gettimeofday ();
+      sender = !node.address;
+      recipients = [];
+      payload;
+    }
 
 let request node request recipient =
   let%lwt message = create_request node recipient request in

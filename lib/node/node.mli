@@ -13,11 +13,12 @@ the incoming message as well as its metadata, and a message
 handler that acts on the current state and the incoming Message.t.
 The message handler is used to initialize a server that runs asynchronously.
 Returns reference to the newly created node. *)
-val init :
-  state:'a -> ?init_peers:Address.t list -> Address.t -> 'a t ref Lwt.t
+val init : state:'a -> ?init_peers:Address.t list -> Address.t -> 'a t ref Lwt.t
 
 val run_server :
   ?preprocessor:(Message.t -> Message.t) ->
   msg_handler:('a ref -> Message.t -> bytes option) ->
   'a t ref ->
   'b Lwt.t
+
+val seen : 'a t ref -> Message.t -> bool

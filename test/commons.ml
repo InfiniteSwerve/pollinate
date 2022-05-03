@@ -34,5 +34,4 @@ module Commons = struct
           Success "Successfully added value to state" in
       Response response |> Encoding.pack bin_writer_message |> Option.some
     | _ -> None
-
 end

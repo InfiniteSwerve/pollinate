@@ -9,7 +9,9 @@ let send_to node message =
   let len = Bytes.length payload in
   let addrs = List.map Address.to_sockaddr message.recipients in
   Mutex.unsafe !node.socket (fun socket ->
-      let%lwt _ = Lwt_list.map_p (fun addr -> sendto socket payload 0 len [] addr) addrs in
+      let%lwt _ =
+        Lwt_list.map_p (fun addr -> sendto socket payload 0 len [] addr) addrs
+      in
       Lwt.return ())
 
 let recv_next node =
@@ -53,27 +55,38 @@ let knuth_shuffle known_peers =
     A randomly picks one (or several, should it also be randomly determined?) peer(s) from its list
     and ask him/them to ping B.*)
 
+let rec take n l =
+  match l with
+  | [] -> []
+  | h :: t when n > 0 -> h :: take (n - 1) t
+  | _ -> []
+
 (** This function return the random peer, to which we will ask to ping the first peer *)
-let rec pick_random_neighbors neighbors number_of_neighbors =
-  let addresses = neighbors |> Base.Hashtbl.keys |> knuth_shuffle in
-  match addresses with
-  | [] -> failwith "pick_random_peers"
-  | elem :: _ ->
-    if number_of_neighbors = 1 then
-      [elem]
-    else
-      elem :: pick_random_neighbors neighbors (number_of_neighbors - 1)
+let pick_random_neighbors neighbors number_of_neighbors =
+  neighbors |> Base.Hashtbl.keys |> knuth_shuffle |> take number_of_neighbors
+(* match addresses with
+   | [] -> []
+   | elem :: _ ->
+     if number_of_neighbors = 1 then
+       [elem]
+     else
+       elem :: pick_random_neighbors neighbors (number_of_neighbors - 1) *)
 
 let broadcast node message (recipients : Address.t list) =
+  let%lwt () =
+    recipients
+    |> List.map (fun Address.{ port; _ } -> string_of_int port)
+    |> String.concat " ; "
+    |> Lwt_io.printf "[%d] Disseminating post to peers: [%s]\n"
+         !node.address.port in
   let message = Message.{ message with recipients } in
   let%lwt () = send_to node message in
   Lwt.return ()
 
 let disseminate node =
-  let dissemination_group = pick_random_neighbors !node.peers 10 in
+  let dissemination_group = pick_random_neighbors !node.peers 2 in
   let _ =
     Disseminator.broadcast_queue !node.disseminator
-    |> List.map (fun message ->
-           broadcast node message dissemination_group) in
+    |> List.map (fun message -> broadcast node message dissemination_group)
+  in
   Lwt.return (!node.disseminator <- Disseminator.next_round !node.disseminator)
-  

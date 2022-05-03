@@ -22,17 +22,20 @@ let next_round disseminator =
     disseminator.pool
     |> List.map (fun ({ remaining; _ } as elt) ->
            { elt with remaining = remaining - 1 })
-    |> List.filter (fun elt -> elt.remaining > 0 && elt.message.timestamp > (Unix.time () -. disseminator.epoch_length)) in
+    |> List.filter (fun elt ->
+           elt.remaining > 0
+           && elt.message.timestamp > Unix.time () -. disseminator.epoch_length)
+  in
 
   { disseminator with round; pool }
 
 let post disseminator message =
   let open Message in
-
   let time = Unix.time () in
-  if message.timestamp > (time -. disseminator.epoch_length) then
+  if message.timestamp > time -. disseminator.epoch_length then
     let pool =
-      { message; remaining = disseminator.num_rounds } :: disseminator.pool in
+      { message; remaining = disseminator.num_rounds } :: disseminator.pool
+    in
     let digest_of_post = Message.hash_of message in
     let seen = DigestSet.add digest_of_post disseminator.seen in
     { disseminator with pool; seen }
@@ -45,7 +48,7 @@ let broadcast_queue disseminator =
 let seen disseminator message =
   let open Message in
   let time = Unix.time () in
-  if message.timestamp > (time -. disseminator.epoch_length) then
+  if message.timestamp > time -. disseminator.epoch_length then
     let hash = Message.hash_of message in
     DigestSet.mem hash disseminator.seen
   else

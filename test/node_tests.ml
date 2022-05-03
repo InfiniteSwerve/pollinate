@@ -25,8 +25,12 @@ module Node_tests = struct
      of the other, returning the first element in the response of each *)
   let trade_messages () =
     let open Messages in
-    let _ = Node.run_server ~preprocessor:Commons.preprocessor ~msg_handler:Commons.msg_handler node_a in
-    let _ = Node.run_server ~preprocessor:Commons.preprocessor ~msg_handler:Commons.msg_handler node_b in
+    let _ =
+      Node.run_server ~preprocessor:Commons.preprocessor
+        ~msg_handler:Commons.msg_handler node_a in
+    let _ =
+      Node.run_server ~preprocessor:Commons.preprocessor
+        ~msg_handler:Commons.msg_handler node_b in
     let get = Encoding.pack bin_writer_message (Request Get) in
 
     let%lwt { payload = res_from_b; _ } =
@@ -46,8 +50,12 @@ module Node_tests = struct
 
   let test_insert () =
     let open Messages in
-    let _ = Node.run_server ~preprocessor:Commons.preprocessor ~msg_handler:Commons.msg_handler node_a in
-    let _ = Node.run_server ~preprocessor:Commons.preprocessor ~msg_handler:Commons.msg_handler node_b in
+    let _ =
+      Node.run_server ~preprocessor:Commons.preprocessor
+        ~msg_handler:Commons.msg_handler node_a in
+    let _ =
+      Node.run_server ~preprocessor:Commons.preprocessor
+        ~msg_handler:Commons.msg_handler node_b in
     let insert_req =
       Encoding.pack bin_writer_message (Request (Insert "something")) in
 
@@ -69,8 +77,12 @@ module Node_tests = struct
 
   let ping_pong () =
     let open Messages in
-    let _ = Node.run_server ~preprocessor:Commons.preprocessor ~msg_handler:Commons.msg_handler node_a in
-    let _ = Node.run_server ~preprocessor:Commons.preprocessor ~msg_handler:Commons.msg_handler node_b in
+    let _ =
+      Node.run_server ~preprocessor:Commons.preprocessor
+        ~msg_handler:Commons.msg_handler node_a in
+    let _ =
+      Node.run_server ~preprocessor:Commons.preprocessor
+        ~msg_handler:Commons.msg_handler node_b in
     let ping = Encoding.pack bin_writer_message (Request Ping) in
 
     let%lwt { payload = pong; _ } = Client.request node_a ping peer_b.address in

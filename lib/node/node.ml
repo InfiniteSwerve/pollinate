@@ -7,7 +7,7 @@ module Failure_detector = Failure_detector
 
 type 'a t = 'a Types.node
 
-let init ~state ?(init_peers = []) Address.{ address; port} =
+let init ~state ?(init_peers = []) Address.{ address; port } =
   let open Util in
   let%lwt socket = Net.create_socket port in
   let peers =
@@ -33,9 +33,11 @@ let init ~state ?(init_peers = []) Address.{ address; port} =
               helpers_size = 3;
             };
         peers;
-        disseminator = Disseminator.create ~num_rounds:10 ~epoch_length:30.;
+        disseminator = Disseminator.create ~num_rounds:10 ~epoch_length:50.;
       } in
   Lwt.return node
 
 let run_server ?(preprocessor = fun m -> m) ~msg_handler node =
   Server.run (Unix.time ()) node preprocessor msg_handler
+
+let seen node message = Disseminator.seen !node.disseminator message
