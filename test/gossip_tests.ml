@@ -96,58 +96,74 @@ module Gossip_tests = struct
         (Node.run_server ~preprocessor:Commons.preprocessor
            ~msg_handler:Commons.msg_handler)
         nodes in
-    let message = String.to_bytes "hello" |> Client.create_post node in
+    let message =
+      Client.address_of !node
+      |> (fun Address.{ port; _ } -> port)
+      |> string_of_int
+      |> String.to_bytes
+      |> Client.create_post node in
     Client.post node message;
 
     let%lwt () = Lwt_unix.sleep (0.2 *. 10.) in
 
-    let all_seen () =
+    let seen () =
       nodes
       |> List.filter (fun n -> Node.seen n message)
-      |> node_ports
-      = node_ports nodes in
+      |> node_ports in
+
+    let all_seen () =
+      seen () = node_ports nodes in
+
+    seen ()
+    |> List.map string_of_int
+    |> String.concat "; "
+    |> Printf.printf "SEEN: %s\n";
 
     let rounds = ref 0 in
 
     let%lwt () =
-      while%lwt !rounds < 4 && not (all_seen ()) do
+      while%lwt !rounds < 8 && not (all_seen ()) do
         rounds := !rounds + 1;
         Lwt_unix.sleep (0.2 *. 10.)
       done in
 
-    nodes
-    |> List.filter (fun n -> Node.seen n message)
-    |> node_ports
+    seen ()
     |> Lwt.return
 end
 
-let test_disseminate_from_a _ () =
-  Gossip_tests.disseminate_from Gossip_tests.node_a
-  >|= Alcotest.(check (list int))
-        "All nodes have seen the message"
-        Gossip_tests.(node_ports nodes)
-
-let test_disseminate_from_b _ () =
-  Gossip_tests.disseminate_from Gossip_tests.node_b
-  >|= Alcotest.(check (list int))
-        "All nodes have seen the message"
-        Gossip_tests.(node_ports nodes)
-
-let test_disseminate_from_c _ () =
-  Gossip_tests.disseminate_from Gossip_tests.node_c
-  >|= Alcotest.(check (list int))
-        "All nodes have seen the message"
-        Gossip_tests.(node_ports nodes)
+let test_disseminate_from node =
+  let test _ () =
+    Gossip_tests.disseminate_from node
+    >|= Alcotest.(check (list int))
+          (Printf.sprintf "All nodes have seen the message %d" (!node.address.port))
+          Gossip_tests.(node_ports nodes) in
+  test
 
 let () =
   Lwt_main.run
-  @@ Alcotest_lwt.run "Client tests"
+  @@ Alcotest_lwt.run "Gossip tests"
        [
          ( "gossip dissemination",
            [
+             (* Alcotest_lwt.test_case "Dissemination from A" `Quick
+               (test_disseminate_from Gossip_tests.node_a); *)
              Alcotest_lwt.test_case "Dissemination from B" `Quick
-               test_disseminate_from_b;
+               (test_disseminate_from Gossip_tests.node_b);
              Alcotest_lwt.test_case "Dissemination from C" `Quick
-               test_disseminate_from_c;
+               (test_disseminate_from Gossip_tests.node_c);
+             Alcotest_lwt.test_case "Dissemination from D" `Quick
+               (test_disseminate_from Gossip_tests.node_d);
+             (* Alcotest_lwt.test_case "Dissemination from E" `Quick
+               (test_disseminate_from Gossip_tests.node_e);
+             Alcotest_lwt.test_case "Dissemination from F" `Quick
+               (test_disseminate_from Gossip_tests.node_f);
+             Alcotest_lwt.test_case "Dissemination from G" `Quick
+               (test_disseminate_from Gossip_tests.node_g);
+             Alcotest_lwt.test_case "Dissemination from H" `Quick
+               (test_disseminate_from Gossip_tests.node_h);
+             Alcotest_lwt.test_case "Dissemination from I" `Quick
+               (test_disseminate_from Gossip_tests.node_i);
+             Alcotest_lwt.test_case "Dissemination from J" `Quick
+               (test_disseminate_from Gossip_tests.node_j); *)
            ] );
        ]

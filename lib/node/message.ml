@@ -29,3 +29,5 @@ let hash_of m =
   ]
   |> String.concat ""
   |> Digest.string
+  |> Digest.to_hex
+  |> (fun s -> String.sub s 0 7)

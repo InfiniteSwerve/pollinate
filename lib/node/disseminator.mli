@@ -35,3 +35,5 @@ val broadcast_queue : t -> Message.t list
     given message before, or whether the message is too old to be
     retained in the set of seen messages. *)
 val seen : t -> Message.t -> bool
+
+val all_seen : t -> string list

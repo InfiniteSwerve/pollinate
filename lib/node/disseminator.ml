@@ -53,3 +53,8 @@ let seen disseminator message =
     DigestSet.mem hash disseminator.seen
   else
     false
+
+let all_seen disseminator =
+  disseminator.seen
+  |> DigestSet.to_seq
+  |> List.of_seq

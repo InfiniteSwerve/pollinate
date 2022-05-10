@@ -38,8 +38,8 @@ let process_message node message preprocessor msg_handler =
   let message = preprocessor message in
   let%lwt () =
     log node
-      (Printf.sprintf "Processing message of category %s from %d...\n"
-         (Message.show_category message.category)
+      (Printf.sprintf "Processing message %s from %d...\n"
+         (Message.hash_of message)
          message.sender.port) in
   let%lwt () =
     match message.category with
@@ -65,8 +65,8 @@ let process_message node message preprocessor msg_handler =
       if not (Disseminator.seen !node.disseminator message) then (
         let%lwt () =
           log node
-            (Printf.sprintf "%s:%d : Processing post from %s:%d\n"
-               !node.address.address !node.address.port message.sender.address
+            (Printf.sprintf "%s:%d : Processing post %s from %s:%d\n"
+               !node.address.address !node.address.port (Message.hash_of message) message.sender.address
                message.sender.port) in
         let%lwt state = Mutex.lock !node.state in
         let _ = msg_handler state message in
@@ -74,7 +74,9 @@ let process_message node message preprocessor msg_handler =
         Client.post node message;
         Lwt.return (Mutex.unlock !node.state))
       else
-        log node "Got post but saw it already\n"
+        log node
+          (Printf.sprintf "Got post %s from %s:%d but saw it already\n"
+             (Message.hash_of message) message.sender.address message.sender.port)
     | _ ->
       let%lwt state = Mutex.lock !node.state in
       let _ = msg_handler state message in
@@ -82,16 +84,18 @@ let process_message node message preprocessor msg_handler =
   Lwt.return ()
 
 let print_logs node =
-  let open Message in
   let%lwt () = log node "Running server\n" in
-  let%lwt () =
-    !node.disseminator
-    |> Disseminator.broadcast_queue
-    |> List.map (fun { category; _ } -> Message.show_category category)
-    |> String.concat " "
-    |> Printf.sprintf "Broadcast Queue: %s\n"
-    |> log node in
-  Lwt.return ()
+  if (List.length (Disseminator.broadcast_queue !node.disseminator) > 0) then
+    let%lwt () =
+      !node.disseminator
+      |> Disseminator.broadcast_queue
+      |> List.map (Message.hash_of)
+      |> String.concat " "
+      |> Printf.sprintf "Broadcast Queue: %s\n"
+      |> log node in
+    Lwt.return ()
+  else
+    Lwt.return ()
 
 (* Spend n seconds trying to receive a new message *)
 let get_new_message node n message_ref =
@@ -119,6 +123,8 @@ let rec run last node preprocessor msg_handler =
   let%lwt () = Failure_detector.failure_detection node in
 
   let%lwt () = Networking.disseminate node in
+
+  let%lwt () = log node (Printf.sprintf "Seen: %s\n" (Disseminator.all_seen !node.disseminator |> String.concat " ; ")) in
 
   (* Step 2 *)
   (* let%lwt last =
