@@ -83,6 +83,10 @@ module Gossip_tests = struct
       node_i;
       node_j;
     ]
+
+  (** Utility function for producing a list of ports from
+      the addresses of the given nodes. This provides an easy
+      way to identify nodes that are hosted on the same machine. *)
   let node_ports nodes =
     List.map
       (fun n ->
@@ -90,7 +94,12 @@ module Gossip_tests = struct
         addr.port)
       nodes
 
-  let disseminate_from node =
+  (** Starts the server for each node and constructs a Post message
+      whose author is the specified node, then disseminates it. Checks
+      every 2 seconds to see if all nodes have received the disseminated
+      message. The 2 second wait occurs n times before timing out and returning
+      the ports of the nodes who saw the message. *)
+  let disseminate_from n node =
     let _ =
       List.map
         (Node.run_server ~preprocessor:Commons.preprocessor
@@ -122,7 +131,7 @@ module Gossip_tests = struct
     let rounds = ref 0 in
 
     let%lwt () =
-      while%lwt !rounds < 8 && not (all_seen ()) do
+      while%lwt !rounds < (n - 1) && not (all_seen ()) do
         rounds := !rounds + 1;
         Lwt_unix.sleep (0.2 *. 10.)
       done in
@@ -131,13 +140,12 @@ module Gossip_tests = struct
     |> Lwt.return
 end
 
-let test_disseminate_from node =
-  let test _ () =
-    Gossip_tests.disseminate_from node
+(** Test for dissemination given a specific node. *)
+let test_disseminate_from node _ () =
+    Gossip_tests.disseminate_from 8 node
     >|= Alcotest.(check (list int))
           (Printf.sprintf "All nodes have seen the message %d" (!node.address.port))
-          Gossip_tests.(node_ports nodes) in
-  test
+          Gossip_tests.(node_ports nodes)
 
 let () =
   Lwt_main.run
